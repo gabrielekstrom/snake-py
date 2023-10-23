@@ -12,7 +12,7 @@ snake-py is a simple terminal implementation of the classic snake game written i
 
 2. Run the game
     ```console
-    python src/snake.py
+    python snake.py
     ```
 
 ### Installation (Windows only)
