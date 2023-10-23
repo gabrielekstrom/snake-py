@@ -1,4 +1,4 @@
-# snake-py - a simple implementation of the classic snake game in Python.
+# snake-py - a simple terminal implementation of the classic snake game in Python.
 # Copyright (c) 2023 Gabriel Ekström. All rights reserved.
 
 import curses
@@ -11,22 +11,22 @@ class Game:
         self.width = 10
         self.height = 10
 
-        self.snake = Snake(self)
+        self.score = 0
+
+        self.snake = Snake(self) # Skapa en ny instans av klassen Snake och skicka med en pointer till den aktuella klassen Game. Detta krävs eftersom Snake behöver komma åt Game:s lokala variabler.
+        
         self.food = []
         self.place_food()
 
-        self.score = 0
-
+    # Funktion för att printa spelplanen och övrig information till konsollen
     def print(self, screen):
         screen.clear() # Rensa konsollen
 
-        screen.addstr(0, 0, f"Current score: {self.score}") # Skriv ut den aktuella poängen
+        screen.addstr(0, 0, f"Current score: {self.score}")
 
-        offset = 2
+        offset = 1
 
-        # Loop through all rows and columns
-        # When looping through columns, add the right character to the row string
-        # Afterwards, print the row string and move on to the next row
+        # Loopa genom alla rader och kolumner i spelplanen
         for y in range(self.height):
             row = ""
             for x in range(self.width):
@@ -51,12 +51,12 @@ class Game:
 
             self.food = [x, y]
 
-            # Kolla om maten hamnade under ormen
+            # Kontrollera om maten hamnade under ormen
             if self.food == self.snake.head or self.food in self.snake.body:
                 # Kör funktionen igen
                 self.place_food()
     
-    # Kontrollerar om den givna koordinaten ligger inom spelområdet
+    # Kontrollerar om den givna koordinaten ligger på spelplanen
     def is_outside_map(self, coordinate):
         if coordinate[0] > self.width-1:
             return True
@@ -73,17 +73,17 @@ class Game:
         else:
             return False
 
-
 class Snake:
     def __init__(self, game) -> None:
-        self.body = [[1, 1], [2, 1], [3, 1]] # Set default position
-        self.head = [4, 1] # Set default position
+        self.body = [[1, 1], [2, 1], [3, 1]] # Sätt ormens kropps startposition
+        self.head = [4, 1] # Sätt ormens huvuds startposition
         self.direction = "r"
-        self.game = game # Behövs för att komma åt spelplanen
         self.isAlive = True
 
+        self.game = game # Spara en lokal pointer till Game så att vi kommer åt dess lokala variabler
+
     def set_direction(self, newDirection):
-        # Kolla om den nya riktningen är ogiltig, alltså om den hade krockat med den förra riktningen
+        # Kontrollera om den nya riktningen är ogiltig, alltså om den hade krockat med den nuvarande riktningen
         if newDirection == "u" and self.direction == "d":
             return
         elif newDirection == "d" and self.direction == "u":
@@ -97,7 +97,7 @@ class Snake:
 
     def move(self):
         # Lägg till huvudets gamla position i kroppens lista
-        self.body.append([self.head[0], self.head[1]]) # VIKTIGT - Om vi inte refererar till det exakta värdet så skapar Python i stället en "pointer" till self.head vilket skapar problem när vi vill lägga huvudets koordinat i kroppens lista.
+        self.body.append([self.head[0], self.head[1]]) # OBS - om vi inte refererar till det exakta värdet så skapar Python i stället en "pointer" till self.head vilket skapar problem när vi vill lägga huvudets gamla koordinat i den nya kroppens lista.
 
         # Kontrollera om ormens huvud är på matens position
         if self.head == self.game.food:
@@ -107,27 +107,26 @@ class Snake:
 
         # Beräkna huvudets nya koordinater
         match self.direction:
-            case "u":
+            case "u": # Upp
                 self.head[0] = self.head[0]
                 self.head[1] = self.head[1] - 1
-            case "d":
+            case "d": # Ner
                 self.head[0] = self.head[0]
                 self.head[1] = self.head[1] + 1
-            case "l":
+            case "l": # Vänster
                 self.head[0] = self.head[0] - 1
                 self.head[1] = self.head[1]
-            case "r":
+            case "r": # Höger
                 self.head[0] = self.head[0] + 1
                 self.head[1] = self.head[1]
 
-        # Kolla om ormen har ätit
         if hasEaten:
-            # Generera en ny matbit
+            # Ormen har ätit och vi behöver generera en ny matbit
             self.game.place_food()
             # Öka poängen
             self.game.score += 1
         else:
-            # Om ormen inte ätit ska vi ta bort första koordinaten i listan så att ormen inte växer
+            # Om ormen inte ätit ska vi ta bort första koordinaten i listan (svansen) så att ormen inte växer
             self.body.pop(0)
 
         # Kolla om ormens huvud ligger i listan med kroppens koordinater. Detta innebär i sådana fall att huvudet krockat med kroppen.
@@ -174,7 +173,7 @@ def main(screen):
         # Visa spelplanen
         game.print(screen)
 
-        time.sleep(.6)
+        time.sleep(.6) # Bestämmer spelets hastighet
 
     # Skriv ut game over och vänta, stäng sedan programmet
     screen.clear()
