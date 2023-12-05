@@ -173,7 +173,7 @@ def main(screen):
         # Visa spelplanen
         game.print(screen)
 
-        time.sleep(.6) # Bestämmer spelets hastighet
+        time.sleep(.4) # Bestämmer spelets hastighet
 
     # Skriv ut game over och vänta, stäng sedan programmet
     screen.clear()
